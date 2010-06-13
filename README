@@ -23,7 +23,9 @@ want to install `rake` so that you can use the provided rake tasks. Aside from t
 
 * The `tidy` binary needs to be installed for the html-to-html tests to work.
 * The `latex` binary needs to be installed for the latex-compilation tests to work.
-
+* If you get errors about missing latex file such as `ucs.sty` or `utf8x.def`,
+  you may need to install manually the unicode package from CTAN:
+  http://ctan.org/tex-archive/macros/latex/contrib/unicode/
 
 # License
 
