@@ -269,6 +269,15 @@ Default: false
 Used by: HTML converter
 EOF
 
+    define(:toc_depth, Integer, nil, <<EOF)
+Defines the maximum level of headers which will be used to generate the table of
+contents. For instance, with a value of 2, toc entries will be generated for h1
+and h2 headers but not for h3, h4, etc.
+
+Default: nil
+Used by: HTML converter
+EOF
+
   end
 
 end

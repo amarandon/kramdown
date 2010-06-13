@@ -115,8 +115,12 @@ module Kramdown
         if @doc.options[:auto_ids] && !(el.options[:attr] && el.options[:attr]['id'])
           (el.options[:attr] ||= {})['id'] = generate_id(el.options[:raw_text])
         end
-        @toc << [el.options[:level], el.options[:attr]['id'], el.children] if el.options[:attr] && el.options[:attr]['id']
+        @toc << [el.options[:level], el.options[:attr]['id'], el.children] if el.options[:attr] && el.options[:attr]['id'] && within_toc_depth?(el)
         "#{' '*indent}<h#{el.options[:level]}#{options_for_element(el)}>#{inner(el, indent, opts)}</h#{el.options[:level]}>\n"
+      end
+
+      def within_toc_depth?(el)
+        @doc.options[:toc_depth].nil? or el.options[:level] <= @doc.options[:toc_depth]
       end
 
       def convert_hr(el, indent, opts)
