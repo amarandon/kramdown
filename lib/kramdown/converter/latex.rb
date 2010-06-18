@@ -64,10 +64,6 @@ module Kramdown
         escape(el.value)
       end
 
-      def convert_eob(el, opts)
-        ''
-      end
-
       def convert_p(el, opts)
         "#{inner(el, opts)}\n\n"
       end
@@ -189,6 +185,10 @@ module Kramdown
         inner(el, opts)
       end
       alias :convert_th :convert_td
+
+      def convert_comment(el, opts)
+        el.value.split(/\n/).map {|l| "% #{l}"}.join("\n") + "\n"
+      end
 
       def convert_br(el, opts)
         "\\newline\n"
