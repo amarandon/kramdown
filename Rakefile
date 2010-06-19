@@ -112,7 +112,7 @@ EOF
   PKG_FILES = FileList.new([
                             'Rakefile',
                             'setup.rb',
-                            'COPYING', 'GPL', 'README', 'AUTHORS',
+                            'COPYING', 'GPL', 'README.md', 'AUTHORS',
                             'VERSION', 'ChangeLog', 'CONTRIBUTERS',
                             'bin/*',
                             'benchmark/*',
