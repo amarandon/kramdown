@@ -269,13 +269,13 @@ Default: false
 Used by: HTML converter, kramdown converter
 EOF
 
-    define(:toc_depth, Integer, nil, <<EOF)
+    define(:toc_depth, Integer, 0, <<EOF)
 Defines the maximum level of headers which will be used to generate the table of
 contents. For instance, with a value of 2, toc entries will be generated for h1
-and h2 headers but not for h3, h4, etc.
+and h2 headers but not for h3, h4, etc. A value of 0 uses all header levels.
 
-Default: nil
-Used by: HTML converter
+Default: 0
+Used by: HTML/Latex converter
 EOF
 
   end

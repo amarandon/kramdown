@@ -124,7 +124,7 @@ module Kramdown
       end
 
       def within_toc_depth?(el)
-        @doc.options[:toc_depth].nil? or el.options[:level] <= @doc.options[:toc_depth]
+        @doc.options[:toc_depth] <= 0 || el.options[:level] <= @doc.options[:toc_depth]
       end
 
       def convert_hr(el, indent, opts)
