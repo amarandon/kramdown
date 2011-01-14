@@ -15,6 +15,7 @@ rescue LoadError
 end
 
 begin
+  gem 'rdoc' if RUBY_VERSION >= '1.9'
   require 'rdoc/task'
   require 'rdoc/rdoc'
 rescue LoadError
@@ -73,17 +74,16 @@ if defined? Webgen
   end
 end
 
-if defined? Rake::RDocTask
-  rd = Rake::RDocTask.new do |rdoc|
+if defined? RDoc::Task
+  rd = RDoc::Task.new do |rdoc|
     rdoc.rdoc_dir = 'htmldoc/rdoc'
     rdoc.title = 'kramdown'
-    rdoc.main = 'Kramdown'
-    rdoc.options << '--line-numbers'
-    rdoc.rdoc_files.include('lib/**/*.rb')
+    rdoc.main = 'README'
+    rdoc.rdoc_files.include('lib', 'README')
   end
 end
 
-if defined?(Webgen) && defined?(Rake::RDocTask)
+if defined?(Webgen) && defined?(RDoc::Task)
   desc "Build the whole user documentation"
   task :doc => [:rdoc, 'htmldoc']
 end
@@ -176,7 +176,8 @@ EOF
       #### Documentation
 
       s.has_rdoc = true
-      s.rdoc_options = ['--line-numbers', '--main', 'Kramdown']
+      s.rdoc_options = ['--main', 'README']
+      s.extra_rdoc_files = 'README'
 
       #### Author and project details
 
@@ -236,7 +237,7 @@ EOF
 
   desc "Upload the website to Rubyforge"
   task :publish_website => ['doc'] do
-    sh "rsync -avc --delete --exclude 'wiki' --exclude 'robots.txt'  htmldoc/ gettalong@rubyforge.org:/var/www/gforge-projects/kramdown/"
+    sh "rsync -avc --delete --exclude 'MathJax' --exclude 'robots.txt'  htmldoc/ gettalong@rubyforge.org:/var/www/gforge-projects/kramdown/"
   end
 
 
@@ -306,7 +307,7 @@ if defined? Webgen
         lines = term.desc.split(/\n/)
         first = lines.shift
         rest = lines[0..-2].collect {|l| "  " + l}.join("\n")
-        "`#{term.name}`\n: #{first}\n#{rest}"
+        "`#{term.name}`\n: #{first}\n#{rest}\n\n"
       end.join("\n")
     end
 

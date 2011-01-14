@@ -21,18 +21,23 @@
 #
 
 require 'kramdown/parser/kramdown/blank_line'
+require 'kramdown/parser/kramdown/extensions'
+require 'kramdown/parser/kramdown/eob'
+require 'kramdown/parser/kramdown/paragraph'
 
 module Kramdown
   module Parser
     class Kramdown
 
       CODEBLOCK_START = INDENT
-      CODEBLOCK_LINE =  /(?:#{INDENT}.*?\S.*?\n)+/
-      CODEBLOCK_MATCH = /(?:#{BLANK_LINE}?#{CODEBLOCK_LINE})*/
+      CODEBLOCK_MATCH = /(?:#{BLANK_LINE}?(?:#{INDENT}[ \t]*\S.*\n)+(?:(?!#{BLANK_LINE} {0,3}\S|#{IAL_BLOCK_START}|#{EOB_MARKER}|^#{OPT_SPACE}#{LAZY_END_HTML_STOP}|^#{OPT_SPACE}#{LAZY_END_HTML_START})^[ \t]*\S.*\n)*)*/
 
       # Parse the indented codeblock at the current location.
       def parse_codeblock
-        @tree.children << new_block_el(:codeblock, @src.scan(CODEBLOCK_MATCH).gsub!(INDENT, ''))
+        data = @src.scan(self.class::CODEBLOCK_MATCH)
+        data.gsub!(/\n( {0,3}\S)/, ' \\1')
+        data.gsub!(INDENT, '')
+        @tree.children << new_block_el(:codeblock, data)
         true
       end
       define_parser(:codeblock, CODEBLOCK_START)

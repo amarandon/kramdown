@@ -24,43 +24,57 @@ module Kramdown
 
   module Utils
 
-    module HTML
+    # Provides convenience methods for HTML related tasks.
+    #
+    # *Note* that this module has to be mixed into a class that has a <tt>@root</tt> (containing an
+    # element of type :root) and an <tt>@options</tt> (containing an options hash) instance variable
+    # so that some of the methods can work correctly.
+    module Html
 
-      # Convert the +entity+ to a string.
-      def entity_to_str(e)
-        if RUBY_VERSION >= '1.9' && (c = e.char.encode(@doc.parse_infos[:encoding]) rescue nil) && !ESCAPE_MAP.has_key?(c)
+      # Convert the entity +e+ to a string. The optional parameter +original+ may contain the
+      # original representation of the entity.
+      #
+      # This method uses the option +entity_output+ to determine the output form for the entity.
+      def entity_to_str(e, original = nil)
+        if RUBY_VERSION >= '1.9' && @options[:entity_output] == :as_char &&
+            (c = e.char.encode(@root.options[:encoding]) rescue nil) && !ESCAPE_MAP.has_key?(c)
           c
-        elsif @doc.options[:numeric_entities] || e.name.nil?
+        elsif (@options[:entity_output] == :as_input || @options[:entity_output] == :as_char) && original
+          original
+        elsif @options[:entity_output] == :numeric || e.name.nil?
           "&##{e.code_point};"
         else
           "&#{e.name};"
         end
       end
 
-      # Return the string with the attributes of the element +el+.
-      def html_attributes(el)
-        (el.options[:attr] || {}).map {|k,v| v.nil? ? '' : " #{k}=\"#{escape_html(v.to_s, :no_entities)}\"" }.sort.join('')
+      # Return the HTML representation of the attributes +attr+.
+      def html_attributes(attr)
+        attr.map {|k,v| v.nil? ? '' : " #{k}=\"#{escape_html(v.to_s, :attribute)}\"" }.join('')
       end
 
+      # :stopdoc:
       ESCAPE_MAP = {
         '<' => '&lt;',
         '>' => '&gt;',
         '&' => '&amp;',
         '"' => '&quot;'
       }
-      ESCAPE_ALL_RE = Regexp.union(*ESCAPE_MAP.collect {|k,v| k})
-      ESCAPE_NO_ENTITIES_RE = Regexp.union(REXML::Parsers::BaseParser::REFERENCE_RE, ESCAPE_ALL_RE)
-      ESCAPE_NORMAL = Regexp.union(REXML::Parsers::BaseParser::REFERENCE_RE, /<|>|&/)
+      ESCAPE_ALL_RE = /<|>|&/
+      ESCAPE_TEXT_RE = Regexp.union(REXML::Parsers::BaseParser::REFERENCE_RE, /<|>|&/)
+      ESCAPE_ATTRIBUTE_RE = Regexp.union(REXML::Parsers::BaseParser::REFERENCE_RE, /<|>|&|"/)
       ESCAPE_RE_FROM_TYPE = {
         :all => ESCAPE_ALL_RE,
-        :no_entities => ESCAPE_NO_ENTITIES_RE,
-        :text => ESCAPE_NORMAL
+        :text => ESCAPE_TEXT_RE,
+        :attribute => ESCAPE_ATTRIBUTE_RE
       }
+      # :startdoc:
 
       # Escape the special HTML characters in the string +str+. The parameter +type+ specifies what
-      # is escaped: <tt>:all</tt> - all special HTML characters as well as entities,
-      # <tt>:no_entities</tt> - all special HTML characters but no entities, <tt>:text</tt> - all
-      # special HTML characters except the quotation mark but no entities.
+      # is escaped: <tt>:all</tt> - all special HTML characters as well as entities, <tt>:text</tt>
+      # \- all special HTML characters except the quotation mark but no entities and
+      # <tt>:attribute</tt> - all special HTML characters including the quotation mark but no
+      # entities.
       def escape_html(str, type = :all)
         str.gsub(ESCAPE_RE_FROM_TYPE[type]) {|m| ESCAPE_MAP[m] || m}
       end

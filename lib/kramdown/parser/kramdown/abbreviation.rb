@@ -29,30 +29,36 @@ module Kramdown
       # Parse the link definition at the current location.
       def parse_abbrev_definition
         @src.pos += @src.matched_size
-        abbrev_id, abbrev_text = @src[1], @src[2].strip
-        warning("Duplicate abbreviation ID '#{abbrev_id}' - overwriting") if @doc.parse_infos[:abbrev_defs][abbrev_id]
-        @doc.parse_infos[:abbrev_defs][abbrev_id] = abbrev_text
+        abbrev_id, abbrev_text = @src[1], @src[2]
+        abbrev_text.strip!
+        warning("Duplicate abbreviation ID '#{abbrev_id}' - overwriting") if @root.options[:abbrev_defs][abbrev_id]
+        @root.options[:abbrev_defs][abbrev_id] = abbrev_text
+        @tree.children << Element.new(:eob, :abbrev_def)
         true
       end
       define_parser(:abbrev_definition, ABBREV_DEFINITION_START)
 
       # Replace the abbreviation text with elements.
       def replace_abbreviations(el, regexps = nil)
-        return if @doc.parse_infos[:abbrev_defs].empty?
+        return if @root.options[:abbrev_defs].empty?
         if !regexps
-          regexps = [Regexp.union(*@doc.parse_infos[:abbrev_defs].keys.map {|k| /#{Regexp.escape(k)}/})]
+          regexps = [Regexp.union(*@root.options[:abbrev_defs].keys.map {|k| /#{Regexp.escape(k)}/})]
           regexps << /(?=(?:\W|^)#{regexps.first}(?!\w))/ # regexp should only match on word boundaries
         end
         el.children.map! do |child|
           if child.type == :text
-            result = []
-            strscan = StringScanner.new(child.value)
-            while temp = strscan.scan_until(regexps.last)
-              temp += strscan.scan(/\W|^/)
-              abbr = strscan.scan(regexps.first)
-              result += [Element.new(:text, temp), Element.new(:abbreviation, abbr)]
+            if child.value =~ regexps.first
+              result = []
+              strscan = StringScanner.new(child.value)
+              while temp = strscan.scan_until(regexps.last)
+                temp << strscan.scan(/\W|^/)
+                abbr = strscan.scan(regexps.first)
+                result << Element.new(:text, temp) << Element.new(:abbreviation, abbr)
+              end
+              result << Element.new(:text, strscan.rest)
+            else
+              child
             end
-            result + [Element.new(:text, extract_string(strscan.pos..-1, strscan))]
           else
             replace_abbreviations(child, regexps)
             child

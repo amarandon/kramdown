@@ -24,16 +24,23 @@ module Kramdown
 
   module Utils
 
+    # Provides convenience methods for handling named and numeric entities.
     module Entities
 
+      # Represents an entity that has a +code_point+ and +name+.
       class Entity < Struct.new(:code_point, :name)
 
+        # Return the UTF8 representation of the entity.
         def char
           [code_point].pack('U*') rescue nil
         end
 
       end
 
+      # Array of arrays. Each sub-array specifies a code point and the associated name.
+      #
+      # This table is not used directly -- Entity objects are automatically created from it and put
+      # into a Hash map when this file is loaded.
       ENTITY_TABLE = [
                       [913, 'Alpha'],
                       [914, 'Beta'],
@@ -275,8 +282,6 @@ module Kramdown
                       [8218, 'sbquo'],
                       [402, 'fnof'],
                       [8222, 'bdquo'],
-                      [381, 'Zcaron'],
-                      [382, 'zcaron'],
 
                       [128, 8364],
                       [130, 8218],
@@ -305,7 +310,13 @@ module Kramdown
                       [156, 339],
                       [158, 382],
                       [159, 376],
+
+                      [8194, 'ensp'],
+                      [8195, 'emsp'],
+                      [8201, 'thinsp'],
                      ]
+
+      # Contains the mapping of code point (or name) to the actual Entity object.
       ENTITY_MAP = Hash.new do |h,k|
         if k.kind_of?(Integer)
           h[k] = Entity.new(k, nil)
@@ -318,12 +329,11 @@ module Kramdown
         if data.kind_of?(String)
           ENTITY_MAP[code_point] = ENTITY_MAP[data] = Entity.new(code_point, data)
         else
-          raise "No entity object for code point #{data} found" unless ENTITY_MAP.has_key?(data)
           ENTITY_MAP[code_point] = ENTITY_MAP[data]
         end
       end
 
-      # Return the entity for the given +point_or_name+.
+      # Return the entity for the given code point or name +point_or_name+.
       def entity(point_or_name)
         ENTITY_MAP[point_or_name]
       end

@@ -40,27 +40,30 @@ module Kramdown
     # ----------------------------
     # :section: Option definitions
     #
-    # This sections informs describes the methods that can be used on the Options module.
+    # This sections describes the methods that can be used on the Options module.
     # ----------------------------
 
-    # Contains the definition of an option.
-    Definition = Struct.new(:name, :type, :default, :desc)
+    # Struct class for storing the definition of an option.
+    Definition = Struct.new(:name, :type, :default, :desc, :validator)
 
     # Allowed option types.
-    ALLOWED_TYPES = [String, Integer, Float, Symbol, Boolean, Array, Object]
+    ALLOWED_TYPES = [String, Integer, Float, Symbol, Boolean, Object]
 
     @options = {}
 
     # Define a new option called +name+ (a Symbol) with the given +type+ (String, Integer, Float,
-    # Symbol, Boolean, Array, Object), default value +default+ and the description +desc+.
+    # Symbol, Boolean, Object), default value +default+ and the description +desc+. If a block is
+    # specified, it should validate the value and either raise an error or return a valid value.
     #
-    # The type 'Object' should only be used if none of the other types suffices because such an
-    # option will be opaque and cannot be used, for example, by CLI command!
-    def self.define(name, type, default, desc)
+    # The type 'Object' should only be used for complex types for which none of the other types
+    # suffices. A block needs to be specified when using type 'Object' and it has to cope with
+    # a value given as string and as the opaque type.
+    def self.define(name, type, default, desc, &block)
       raise ArgumentError, "Option name #{name} is already used" if @options.has_key?(name)
       raise ArgumentError, "Invalid option type #{type} specified" if !ALLOWED_TYPES.include?(type)
       raise ArgumentError, "Invalid type for default value" if !(type === default) && !default.nil?
-      @options[name] = Definition.new(name, type, default, desc)
+      raise ArgumentError, "Missing validator block" if type == Object && block.nil?
+      @options[name] = Definition.new(name, type, default, desc, block)
     end
 
     # Return all option definitions.
@@ -98,21 +101,22 @@ module Kramdown
     # String and then to the correct type.
     def self.parse(name, data)
       raise ArgumentError, "No option named #{name} defined" if !@options.has_key?(name)
-      return data if @options[name].type === data
-      data = data.to_s
-      if @options[name].type == String
-        data
-      elsif @options[name].type == Integer
-        Integer(data)
-      elsif @options[name].type == Float
-        Float(data)
-      elsif @options[name].type == Symbol
-        (data.strip.empty? ? nil : data.to_sym)
-      elsif @options[name].type == Boolean
-        data.downcase.strip != 'false' && !data.empty?
-      elsif @options[name].type == Array
-        data.split(/\s+/)
+      if !(@options[name].type === data)
+        data = data.to_s
+        data = if @options[name].type == String
+                 data
+               elsif @options[name].type == Integer
+                 Integer(data) rescue raise Kramdown::Error, "Invalid integer value for option '#{name}': '#{data}'"
+               elsif @options[name].type == Float
+                 Float(data) rescue raise Kramdown::Error, "Invalid float value for option '#{name}': '#{data}'"
+               elsif @options[name].type == Symbol
+                 (data.strip.empty? ? nil : data.to_sym)
+               elsif @options[name].type == Boolean
+                 data.downcase.strip != 'false' && !data.empty?
+               end
       end
+      data = @options[name].validator[data] if @options[name].validator
+      data
     end
 
     # ----------------------------
@@ -169,7 +173,7 @@ EOF
 Process kramdown syntax in block HTML tags
 
 If this option is `true`, the kramdown parser processes the content of
-block HTML tags as text containing block level elements. Since this is
+block HTML tags as text containing block-level elements. Since this is
 not wanted normally, the default is `false`. It is normally better to
 selectively enable kramdown processing via the markdown attribute.
 
@@ -181,7 +185,7 @@ EOF
 Process kramdown syntax in span HTML tags
 
 If this option is `true`, the kramdown parser processes the content of
-span HTML tags as text containing span level elements.
+span HTML tags as text containing span-level elements.
 
 Default: true
 Used by: kramdown parser
@@ -262,21 +266,85 @@ Default: style
 Used by: HTML converter
 EOF
 
-    define(:numeric_entities, Boolean, false, <<EOF)
-Defines whether entities are output using names or numeric values
+    define(:entity_output, Symbol, :as_char, <<EOF)
+Defines how entities are output
 
-Default: false
+The possible values are :as_input (entities are output in the same
+form as found in the input), :numeric (entities are output in numeric
+form), :symbolic (entities are output in symbolic form if possible) or
+:as_char (entities are output as characters if possible, only available
+on Ruby 1.9).
+
+Default: :as_char
 Used by: HTML converter, kramdown converter
 EOF
 
-    define(:toc_depth, Integer, 0, <<EOF)
-Defines the maximum level of headers which will be used to generate the table of
+    define(:toc_depth, Integer, -1, <<EOF)
+DEPRECATED: Defines the maximum level of headers which will be used to generate the table of
 contents. For instance, with a value of 2, toc entries will be generated for h1
 and h2 headers but not for h3, h4, etc. A value of 0 uses all header levels.
 
-Default: 0
+Use option toc_levels instead!
+
+Default: -1
 Used by: HTML/Latex converter
 EOF
+
+    define(:toc_levels, Object, (1..6).to_a, <<EOF) do |val|
+Defines the levels that are used for the table of contents
+
+The individual levels can be specified by separating them with commas
+(e.g. 1,2,3) or by using the range syntax (e.g. 1..3). Only the
+specified levels are used for the table of contents.
+
+Default: 1..6
+Used by: HTML/Latex converter
+EOF
+      if String === val
+        if val =~ /^(\d)\.\.(\d)$/
+          val = Range.new($1.to_i, $2.to_i).to_a
+        elsif val =~ /^\d(?:,\d)*$/
+          val = val.split(/,/).map {|s| s.to_i}.uniq
+        else
+          raise Kramdown::Error, "Invalid syntax for option toc_levels"
+        end
+      elsif Array === val
+        val = val.map {|s| s.to_i}.uniq
+      else
+        raise Kramdown::Error, "Invalid type #{val.class} for option toc_levels"
+      end
+      if val.any? {|i| !(1..6).include?(i)}
+        raise Kramdown::Error, "Level numbers for option toc_levels have to be integers from 1 to 6"
+      end
+      val
+    end
+
+    define(:line_width, Integer, 72, <<EOF)
+Defines the line width to be used when outputting a document
+
+Default: 72
+Used by: kramdown converter
+EOF
+
+    define(:latex_headers, Object, %w{section subsection subsubsection paragraph subparagraph subparagraph}, <<EOF) do |val|
+Defines the LaTeX commands for different header levels
+
+The commands for the header levels one to six can be specified by
+separating them with commas.
+
+Default: section,subsection,subsubsection,paragraph,subparagraph,subsubparagraph
+Used by: Latex converter
+EOF
+      if String === val
+        val = val.split(/,/)
+      elsif !(Array === val)
+        raise Kramdown::Error, "Invalid type #{val.class} for option latex_headers"
+      end
+      if val.size != 6
+        raise Kramdown::Error, "Option latex_headers needs exactly six LaTeX commands"
+      end
+      val
+    end
 
   end
 

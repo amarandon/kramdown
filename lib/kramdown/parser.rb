@@ -22,17 +22,17 @@
 
 module Kramdown
 
-  # == Parser Module
+  # This module contains all available parsers. A parser takes an input string and converts the
+  # string to an element tree.
   #
-  # This module contains all available parsers. Currently, there two parsers:
-  #
-  # * Kramdown for parsing documents in kramdown format
-  # * Html for parsing HTML documents
+  # New parsers should be derived from the Base class which provides common functionality - see its
+  # API documentation for how to create a custom converter class.
   module Parser
 
     autoload :Base, 'kramdown/parser/base'
     autoload :Kramdown, 'kramdown/parser/kramdown'
     autoload :Html, 'kramdown/parser/html'
+    autoload :Markdown, 'kramdown/parser/markdown'
 
   end
 

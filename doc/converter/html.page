@@ -61,8 +61,7 @@ A code block is wrapped in both `<pre>` and  `<code>` tags.
 ### Showing Whitespace in a Code Block
 
 It is sometimes useful to visualize whitespace within a code block. This can be achieved by adding
-the class `show-whitespaces` to a code block (using a [block
-IAL](../syntax.html#block-inline-attribute-lists)).
+the class `show-whitespaces` to a code block (using a [block IAL](../syntax.html#block-ials)).
 
 Here is an example where the whitespaces are shown:
 
@@ -79,15 +78,15 @@ following CSS classes:
 * `ws-space`, `ws-tab`: spaces/tabs in between
 
 
-### Automatic Syntax Highlighting   {#syntax-highlighting}
+## Automatic Syntax Highlighting   {#syntax-highlighting}
 
-kramdown supports syntax highlighting of code blocks. Just add the key `lang` to a code block (using
-a [block IAL](../syntax.html#block-inline-attribute-lists)) and it will be highlighted using the
-specified language.
+kramdown supports syntax highlighting of code blocks and code spans. Just add the key `lang` to a
+code block (using a [block IAL](../syntax.html#block-ials) or a [span
+IAL](../syntax.html#span-ials)) and it will be highlighted using the specified language.
 
-Syntax highlighting for text in a code blocks is done using the
-[CodeRay](http://coderay.rubychan.de) library which can be installed, for example, via Rubygems.
-Have a look at the CodeRay homepage to see all supported languages.
+Syntax highlighting for text is done using the [CodeRay](http://coderay.rubychan.de) library which
+can be installed, for example, via Rubygems. Have a look at the CodeRay homepage to see all
+supported languages.
 
 Here is an example on how Ruby code is highlighted:
 
@@ -100,12 +99,13 @@ Here is an example on how Ruby code is highlighted:
 
 ## Math Support
 
-If you want math formulas correctly displayed, you have to include the [jsMath] javascript library
-in the HTML file (see the [jsMath homepage][jsMath] for details). Note that kramdown does *not* ship
-with the jsMath library and that therefore the `default` template does *not* include a link to it!
+If you want math formulas to be correctly displayed, you have to include the [MathJax] javascript
+library in the HTML file (see the [MathJax homepage][MathJax] for details). Note that kramdown does
+*not* ship with the MathJax library and that therefore the `default` template does *not* include a
+link to it!
 
-Why jsMath? Because I think that it is simply the best way to display LaTeX math formulas on the
-Web.
+Why MathJax? Because I think that it is simply the best way to display LaTeX math formulas on the
+Web. It is easy to install and use and works on all modern browsers.
 
 
 ## Emphasis
@@ -137,7 +137,7 @@ Here is an example:
 
 The HTML converter supports the following options:
 
-{options: {items: [:auto_ids, :template, :footnote_nr, :toc_depth, :coderay_wrap, :coderay_line_numbers, :coderay_line_number_start, :coderay_tab_width, :coderay_bold_every, :coderay_css]}}
+{options: {items: [:auto_ids, :template, :footnote_nr, :entity_output, :toc_levels, :coderay_wrap, :coderay_line_numbers, :coderay_line_number_start, :coderay_tab_width, :coderay_bold_every, :coderay_css]}}
 
 
 {include_file: doc/links.markdown}

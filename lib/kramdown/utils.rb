@@ -22,14 +22,15 @@
 
 module Kramdown
 
-  # == Utils Module
+  # == \Utils Module
   #
   # This module contains utility class/modules/methods that can be used by both parsers and
   # converters.
   module Utils
 
     autoload :Entities, 'kramdown/utils/entities'
-    autoload :HTML, 'kramdown/utils/html'
+    autoload :Html, 'kramdown/utils/html'
+    autoload :OrderedHash, 'kramdown/utils/ordered_hash'
 
   end
 

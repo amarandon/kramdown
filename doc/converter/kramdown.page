@@ -7,10 +7,13 @@ This converter converts a kramdown element tree into a kramdown document and sup
 element types. This converter, together with the [HTML parser](../parser/html.html), can be used to
 convert HTML documents to kramdown documents.
 
+Another use would be to format a badly styled kramdown document (i.e. one with wrapped lines,
+multiple different indentations used in one list, ...).
+
 
 ## Options
 
 The kramdown converter supports the following options:
 
-{options: {items: [:numeric_entities, :template]}}
+{options: {items: [:entity_output, :template]}}
 

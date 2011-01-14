@@ -23,20 +23,22 @@ opts: |
   level 2 concept/.append style={font=\Large},
 }
 \node[concept, font=\Large] (lib) {kramdown's internal representation}
-  child[concept color=orange, grow=150, ->] {node[concept] (i-kramdown) {kramdown}}
-  child[concept color=orange, grow=210] {node[concept] (i-html) {HTML}}
+  child[concept color=orange, grow=140, ->] {node[concept] (i-kramdown) {kramdown}}
+  child[concept color=orange, grow=180] {node[concept] (i-html) {HTML}}
+  child[concept color=orange, grow=220] {node[concept] (i-markdown) {Markdown}}
   child[concept color=green!50!black, grow=40] {node[concept] (o-html) {HTML}}
   child[concept color=green!50!black, grow=0] {node[concept] (o-kramdown) {kramdown}}
-  child[concept color=green!50!black, grow=-45] {
+  child[concept color=green!50!black, grow=-40] {
     node[concept] (o-latex) {\LaTeX}
     child[grow=0] {
       node[concept] (o-latex-pdf) {PDF}
     }
   }
-  child[concept color=green!50!black, grow=-45] {node[concept] {\LaTeX}}
+  child[concept color=green!50!black, grow=-40] {node[concept] {\LaTeX}}
 ;
 \draw [dash pattern=on 0pt off 2pt,line width=5pt,arrows=-angle 60,shorten >=15pt,shorten <=10pt,color=orange]
    (i-kramdown) edge(lib)
+   (i-markdown) edge(lib)
    (i-html) edge (lib);
 \draw [dash pattern=on 0pt off 2pt,line width=5pt,arrows=-angle 60,shorten >=10pt,shorten <=15pt,color=green!50!black]
    (lib) edge(o-html)
@@ -72,7 +74,6 @@ Markdown implementations because kramdown borrowed many ideas from existing pack
 
 [PHP Markdown Extra]: http://michelf.com/projects/php-markdown/extra/
 [Maruku]:             http://maruku.rubyforge.org
-[RedCloth]: http://whytheluckystiff.net/ruby/redcloth/
 [BlueCloth]: http://www.deveiate.org/projects/BlueCloth
 
 
@@ -85,11 +86,11 @@ Markdown implementations because kramdown borrowed many ideas from existing pack
 completely written in Ruby, supports standard Markdown (with some minor modifications) and various
 extensions that have been made popular by the [PHP Markdown Extra] package and [Maruku].
 
-It is probably the fastest pure-Ruby Markdown converter available (June 2010), being about 4x faster
-than [Maruku] and about 9x faster than [BlueFeather].
+It is probably the fastest pure-Ruby Markdown converter available (November 2010), being about 4x
+faster than [Maruku] and about 5x faster than [BlueFeather].
 
 <p class="a-center">
-The latest version of kramdown is <b>0.8.0</b> and it was released on <b>2010-06-08</b>.
+The latest version of kramdown is <b>0.12.0</b> and it was released on <b>2010-11-01</b>.
 </p>
 
 [PHP Markdown Extra]: http://michelf.com/projects/php-markdown/extra/
